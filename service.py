@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Service Pipocas.tv version 0.1.0
+# Service Pipocas.tv version 0.1.1
 # Code based on Undertext (FRODO) service
 # Coded by HiGhLaNdR@OLDSCHOOL
 # Ported to Gotham by HiGhLaNdR@OLDSCHOOL
