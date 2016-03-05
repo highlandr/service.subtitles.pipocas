@@ -341,7 +341,7 @@ def Search(item):
     if EN_ON == 'true':
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list: append_subtitle(sub)
-    if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' || EN_ON == 'false':
+    if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
         xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (__scriptname__ , 'Apenas Português | Português Brasil | English | Spanish.',5000)))
 
 def recursive_glob(treeroot, pattern):
