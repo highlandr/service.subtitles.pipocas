@@ -84,7 +84,7 @@ def _log(module, msg):
     xbmc.log(s.encode('utf-8'), level=xbmc.LOGDEBUG)
 
 def log(msg=None):
-    if debug == 'true': _log(_name, msg)
+    if debug == 'true': _log(_scriptname, msg)
 
 def geturl(url):
     class MyOpener(urllib.FancyURLopener):
