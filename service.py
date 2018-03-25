@@ -48,7 +48,7 @@ sys.path.append (_resource)
 _search = _addon.getSetting( 'SEARCH' )
 debug = _addon.getSetting( 'DEBUG' )
 
-main_url = "http://pipocas.tv/"
+main_url = "https://pipocas.tv/"
 debug_pretext = "Pipocas"
 #SEARCH_PAGE_URL = main_url + "modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s"
 
