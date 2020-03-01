@@ -26,6 +26,7 @@ import xbmcvfs
 import cookielib
 import urllib2
 import uuid
+import requests
 
 _addon = xbmcaddon.Addon()
 _author     = _addon.getAddonInfo('author')
@@ -66,12 +67,13 @@ password = _addon.getSetting( "PPpass" )
 
 """
 """
-subtitle_pattern = "<a href=\"info.php(.+?)\" class=\"info\"></a>"
-name_pattern = "<h1 class=\"title\">[\r\n\s]Release: (.+?)\s</h1>|<h1 class=\"title\">[\r\n\s]Release: (.+?)\s<img class=\".+?[\r\n\s]</h1>"
-id_pattern = "download.php\?id=(.+?)\""
-hits_pattern = "<li><span>Hits:</span> (.+?)</li>"
+token_pattern = "<meta name=\"csrf-token\" content=\"(.+?)\">"
+subtitle_pattern = "<a href=\"" + main_url + "legendas/info/(.+?)\" class=\"text-dark no-decoration\">"
+name_pattern = "<h3 class=\"title\" style=\"word-break: break-all;\">Release: <span class=\"font-normal\">(.+?)<\/span><\/h3>"
+id_pattern = "legendas/download/(.+?)\""
+hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-download\" aria-hidden=\"true\"></i> (.+?)</div></span>"
 #desc_pattern = "<div class=\"description-box\">([\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*)<center><iframe"
-uploader_pattern = "<a href=\"/my.php\?u.+?:normal;\"> (.+?)</font></a>"
+uploader_pattern = "id=\"perfil\">(.+?)</span>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
 
@@ -104,48 +106,64 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     subtitles_list = []
 
     # LOGIN FIRST AND THEN SEARCH
-    url = main_url + 'vlogin.php'
+    url = main_url + 'login'
+    # GET CSRF TOKEN
     req_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
-    'Referer': main_url,
+    'Referer': url,
     'Keep-Alive': '300',
     'Connection': 'keep-alive'}
-    request = urllib2.Request(url, headers=req_headers)
-    cj = cookielib.CookieJar()
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-    login_data = urllib.urlencode({'username' : username, 'password' : password})
-    response = opener.open(request,login_data)
+    sessionPipocasTv = requests.Session()
+    result = sessionPipocasTv.get(url)
+    if not result.ok:
+        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+        return []
 
-    page = 0
-    if languageshort == "pt": url = main_url + "subtitles.php?grupo=rel&linguagem=portugues&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-    elif languageshort == "pb": url = main_url + "subtitles.php?grupo=rel&linguagem=brasileiro&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-    elif languageshort == "es": url = main_url + "subtitles.php?grupo=rel&linguagem=espanhol&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-    elif languageshort == "en": url = main_url + "subtitles.php?grupo=rel&linguagem=ingles&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-    else: url = main_url + "index.php"
+    token = re.search(token_pattern, result.text)
 
-    content = opener.open(url)
-    content = content.read()
-    content = content.decode('latin1')
-    while re.search(subtitle_pattern, content, re.IGNORECASE | re.DOTALL) and page < 2:
+    # LOGIN NOW
+    payload = {
+        "username": username, 
+        "password": password, 
+        "_token": token.group(1), 
+    }
+
+    loginResult = sessionPipocasTv.post(
+        url, 
+        data = payload, 
+        headers = req_headers
+    )
+    if not loginResult.ok:
+        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+        return []
+
+    page = 1
+    if languageshort == "pt": url = main_url + "legendas?t=rel&l=portugues&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+    elif languageshort == "pb": url = main_url + "legendas?t=rel&l=brasileiro&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+    elif languageshort == "es": url = main_url + "legendas?t=rel&l=espanhol&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+    elif languageshort == "en": url = main_url + "legendas?t=rel&l=ingles&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+    else: url = main_url + "home"
+
+    content = sessionPipocasTv.get(url)
+    while re.search(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL) and page < 2:
         log("Getting '%s' inside while ..." % subtitle_pattern)
-        for matches in re.finditer(subtitle_pattern, content, re.IGNORECASE | re.DOTALL):
+        for matches in re.finditer(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL):
             details = matches.group(1)
-            content_details = opener.open(main_url + "info.php" + details)
-            content_details = content_details.read()
-            content_details = content_details.decode('latin1')
-            for namematch in re.finditer(name_pattern, content_details, re.IGNORECASE | re.DOTALL):
+            content_details = sessionPipocasTv.get(main_url + "legendas/info/" + details)
+            for namematch in re.finditer(name_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 filename = string.strip(namematch.group(1))
                 desc = filename
                 log("FILENAME match: '%s' ..." % namematch.group(1))         
-            for idmatch in re.finditer(id_pattern, content_details, re.IGNORECASE | re.DOTALL):
+            for idmatch in re.finditer(id_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 id = idmatch.group(1)
                 log("ID match: '%s' ..." % idmatch.group(1))         
-            for upmatch in re.finditer(uploader_pattern, content_details, re.IGNORECASE | re.DOTALL):
+            for upmatch in re.finditer(uploader_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 uploader = upmatch.group(1)
-            for hitsmatch in re.finditer(hits_pattern, content_details, re.IGNORECASE | re.DOTALL):
+                log("Uploader: '%s' ..." % uploader) 
+            for hitsmatch in re.finditer(hits_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 hits = hitsmatch.group(1)
-            downloads = int(hits) / 150
-            if (downloads > 5): downloads=5
+            downloads = int(hits) / 100
+            if (downloads > 5): downloads = 5
             filename = re.sub('\n',' ',filename)
             desc = re.sub('\n',' ',desc)
             #Remove HTML tags on the commentaries
@@ -185,14 +203,12 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
             filename = filename + "  " + "hits: " + hits + " uploader: " + uploader
             subtitles_list.append({'rating': str(downloads), 'filename': filename, 'hits': hits, 'desc': desc, 'sync': sync, 'id': id, 'language_short': languageshort, 'language_name': languagelong})
         page = page + 1
-        if languageshort == "pt": url = main_url + "subtitles.php?grupo=rel&linguagem=portugues&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-        elif languageshort == "pb": url = main_url + "subtitles.php?grupo=rel&linguagem=brasileiro&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-        elif languageshort == "es": url = main_url + "subtitles.php?grupo=rel&linguagem=espanhol&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-        elif languageshort == "en": url = main_url + "subtitles.php?grupo=rel&linguagem=ingles&page=" + str(page) + "&release=" + urllib.quote_plus(searchstring)
-        else: url = main_url + "index.php"
-        content = opener.open(url)
-        content = content.read()
-        content = content.decode('latin1')
+        if languageshort == "pt": url = main_url + "legendas?t=rel&l=portugues&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+        elif languageshort == "pb": url = main_url + "legendas?t=rel&l=brasileiro&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+        elif languageshort == "es": url = main_url + "legendas?t=rel&l=espanhol&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+        elif languageshort == "en": url = main_url + "legendas?t=rel&l=ingles&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
+        else: url = main_url + "home"
+        content = sessionPipocasTv.get(url)
 
 #   Bubble sort, to put syncs on top
     for n in range(0,len(subtitles_list)):
@@ -333,7 +349,7 @@ def Search(item):
     PTBR_ON = _addon.getSetting( 'PTBR' )
     ES_ON = _addon.getSetting( 'ES' )
     EN_ON = _addon.getSetting( 'EN' )
-    
+
     if PT_ON == 'true':
         subtitles_list = getallsubs(searchstring, "pt", "Portuguese", file_original_path, searchstring_notclean)
         for sub in subtitles_list: append_subtitle(sub)
@@ -347,7 +363,7 @@ def Search(item):
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list: append_subtitle(sub)
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
-        xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , 'Apenas Português | Português Brasil | English | Spanish.',5000)))
+        xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
 
 def recursive_glob(treeroot, pattern):
     results = []
@@ -356,22 +372,6 @@ def recursive_glob(treeroot, pattern):
             for filename in fnmatch.filter(files, '*.' + extension): results.append(os.path.join(base, filename))
     return results
 
-def get_download(url, download, id):
-    req_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
-        'Referer': main_url,
-        'Keep-Alive': '300',
-        'Connection': 'keep-alive'}
-    request = urllib2.Request(url, headers=req_headers)
-    cj = cookielib.CookieJar()
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-    login_data = urllib.urlencode({'username' : username, 'password' : password})
-    response = opener.open(request,login_data)
-    download_data = urllib.urlencode({'sid' : id, 'submit' : '+', 'action' : 'Download'})
-    request1 = urllib2.Request(download, download_data, req_headers)
-    f = opener.open(request1)
-    return f
-    
 def Download(id, filename):
     """Called when subtitle download request from XBMC."""
     # Cleanup temp dir, we recomend you download/unzip your subs in temp folder and
@@ -382,47 +382,60 @@ def Download(id, filename):
     
     subtitles_list = []
 
-    url = main_url + 'vlogin.php'
-    download = main_url + 'download.php?id=' + id
+    url = main_url + 'login'
+    download = main_url + 'legendas/download/' + id
+    # GET CSRF TOKEN
     req_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
-    'Referer': main_url,
+    'Referer': url,
     'Keep-Alive': '300',
     'Connection': 'keep-alive'}
-    request = urllib2.Request(url, headers=req_headers)
-    cj = cookielib.CookieJar()
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-    login_data = urllib.urlencode({'username' : username, 'password' : password})
-    response = opener.open(request,login_data)
-    download_data = urllib.urlencode({'id' : id})
-    request1 = urllib2.Request(download, download_data, req_headers)
-    content = opener.open(request1)
+    sessionPipocasTv = requests.Session()
+    result = sessionPipocasTv.get(url)
+    if not result.ok:
+        return []
+    token = re.search(token_pattern, result.text)
 
-#    content = get_download(main_url+'fazendologin.php', main_url+'downloadsub.php', id)
+    # LOGIN NOW
+    payload = {
+        "username": username, 
+        "password": password, 
+        "_token": token.group(1), 
+    }
 
-    content = content.read()
+    loginResult = sessionPipocasTv.post(
+        url, 
+        data = payload, 
+        headers = req_headers
+    )
+    if not loginResult.ok:
+        return []
+
+    content = sessionPipocasTv.get(download)
+    if not content.ok:
+        return []
     #### If user is not registered or User\Pass is misspelled it will generate an error message and break the script execution!
-    if '<title>Pipocas.TV - Login</title>' in content.decode('utf8', 'ignore'):
+    if 'Cria uma conta' in content.content:
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
         xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
-    if content is not None:
-        header = content[:4]
+    if content.content is not None:
+        header = content.content[:4]
         if header == 'Rar!':
-            local_tmp_file = pjoin(_temp, str(uuid.uuid4())+".rar")
+            local_tmp_file = pjoin(_temp, str(uuid.uuid4()) + ".rar")
             packed = True
         elif header == 'PK':
-            local_tmp_file = pjoin(_temp, str(uuid.uuid4())+".zip")
+            local_tmp_file = pjoin(_temp, str(uuid.uuid4()) + ".zip")
             packed = True
         else:
             # never found/downloaded an unpacked subtitles file, but just to be sure ...
             # assume unpacked sub file is an '.srt'
-            local_tmp_file = pjoin(_temp, str(uuid.uuid4())+".srt")
+            local_tmp_file = pjoin(_temp, str(uuid.uuid4()) + ".srt")
             subs_file = local_tmp_file
             packed = False
         log(u"Saving subtitles to '%s'" % (local_tmp_file,))
         try:
             local_file_handle = open(local_tmp_file, "wb")
-            local_file_handle.write(content)
+            local_file_handle.write(content.content)
             local_file_handle.close()
         except: log(u"Failed to save subtitles to '%s'" % (local_tmp_file,))
         if packed:
@@ -479,7 +492,7 @@ def Download(id, filename):
     return subtitles_list
 
 def normalizeString(str):
-    return unicodedata.normalize('NFKD', unicode(unicode(str, 'utf-8'))).encode('ascii', 'ignore')
+    return unicodedata.normalize('NFKD', unicode(str, 'utf-8')).encode('ascii', 'ignore')
 
 def get_params():
     param = []

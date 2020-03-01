@@ -1,5 +1,7 @@
+0.1.6
+- New website design
 0.1.5
-- http->https
+- http -> https
 0.1.4
 - BUGFix when DEBUG mode is on making the script to crash
 0.1.3
