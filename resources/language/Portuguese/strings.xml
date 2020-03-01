@@ -26,5 +26,5 @@
     <string id="32023">Activar modo depuração</string>
     <string id="32024">Extração RAR</string>
     <string id="32025">O sistema de arquivos virtual RAR precisa estar ativado.</string>
-    <string id="32026">Deves ativá-lo em Addons -> Meus add-ons -> Virtual filesystems -> Suporte a arquivos RAR.</string>
+    <string id="32026">Deves ativá-lo em Addons -> Meus add-ons -> Virtual filesystems -> Archive support.</string>
 </strings>
