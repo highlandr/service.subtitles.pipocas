@@ -24,4 +24,7 @@
     <string id="32021">Filename</string>
     <string id="32022">Title</string>
     <string id="32023">Enable debug mode</string>
+    <string id="32024">RAR Extraction</string>
+    <string id="32025">RAR virtual file system must be enabled.</string>
+    <string id="32026">You must enable it under Addons -> My add-ons -> Virtual filesystems -> Archive support</string>
 </strings>
