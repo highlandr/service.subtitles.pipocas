@@ -56,7 +56,7 @@ debug_pretext = "Pipocas"
 #SEARCH_PAGE_URL = main_url + "modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s"
 
 INTERNAL_LINK_URL = "plugin://%(scriptid)s/?action=download&id=%(id)s&filename=%(filename)s"
-SUB_EXTS = ['srt', 'sub', 'txt', 'aas', 'ssa', 'smi']
+SUB_EXTS = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
 HTTP_USER_AGENT = "User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)"
 
 #Grabbing login and pass from xbmc settings
