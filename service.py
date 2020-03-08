@@ -403,13 +403,20 @@ def Search(item):
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
         xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
 
-def extract_all_libarchive(archive_file, directory_to):
+def extract_all_libarchive(archive_file, directory_to, extension = "zip"):
     overall_success = True
     files_out = list()
-    if 'archive://' in archive_file:
-        archive_path = archive_file
+    if extension == "zip":
+        if 'archive://' in archive_file:
+            archive_path = archive_file
+        else:
+            archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
     else:
-        archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+        if 'rar://' in archive_file:
+            archive_path = archive_file
+        else:
+            archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+        
     dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
     for ff in files_in_archive:
         file_from = os.path.join(archive_path,ff).replace('\\','/') #Windows unexpectedly requires a forward slash in the path
@@ -423,7 +430,7 @@ def extract_all_libarchive(archive_file, directory_to):
     for dd in dirs_in_archive:
         if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to),dd)):
             xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to),dd,''),'archive_file':archive_file}, level=xbmc.LOGDEBUG)
-            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path,dd,'').replace('\\','/'),os.path.join(directory_to,dd))
+            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path,dd,'').replace('\\','/'), os.path.join(directory_to,dd), extension)
             if success2:
                 files_out = files_out + files_out2
             else:
@@ -529,7 +536,7 @@ def Download(id, filename):
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp)
+            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp, typeid)
 
             temp = []
             for file in extractedFileList:
