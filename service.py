@@ -56,7 +56,7 @@ debug_pretext = "Pipocas"
 #SEARCH_PAGE_URL = main_url + "modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s"
 
 INTERNAL_LINK_URL = "plugin://%(scriptid)s/?action=download&id=%(id)s&filename=%(filename)s"
-SUB_EXTS = ['srt', 'sub', 'txt', 'aas', 'ssa', 'smi']
+SUB_EXTS = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
 HTTP_USER_AGENT = "User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)"
 
 #Grabbing login and pass from xbmc settings
@@ -75,7 +75,7 @@ name_pattern = "<h3 class=\"title\" style=\"word-break: break-all;\">Release: <s
 id_pattern = "legendas/download/(.+?)\""
 hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-download\" aria-hidden=\"true\"></i> (.+?)</div></span>"
 #desc_pattern = "<div class=\"description-box\">([\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*)<center><iframe"
-uploader_pattern = "<span style=\"color: .+?\" >(.+?)</span></a></b>"
+uploader_pattern = "<span style=\"color: .+?\">(.+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
 
@@ -175,6 +175,9 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     else: url = main_url + "home"
 
     content = sessionPipocasTv.get(url)
+    if 'Cria uma conta' in content.text:
+        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+
     while re.search(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL) and page < 2:
         log("Getting '%s' inside while ..." % subtitle_pattern)
         for matches in re.finditer(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL):
@@ -186,10 +189,10 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
                 log("FILENAME match: '%s' ..." % namematch.group(1))         
             for idmatch in re.finditer(id_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 id = idmatch.group(1)
-                log("ID match: '%s' ..." % idmatch.group(1))         
+                log("ID match: '%s' ..." % idmatch.group(1))
+            global uploader
             uploader = ""
             for upmatch in re.finditer(uploader_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
-                global uploader
                 uploader = upmatch.group(1)
             if uploader == "": uploader = "Bot-Pipocas"
             for hitsmatch in re.finditer(hits_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
