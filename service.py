@@ -75,7 +75,7 @@ name_pattern = "<h3 class=\"title\" style=\"word-break: break-all;\">Release: <s
 id_pattern = "legendas/download/(.+?)\""
 hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-download\" aria-hidden=\"true\"></i> (.+?)</div></span>"
 #desc_pattern = "<div class=\"description-box\">([\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*)<center><iframe"
-uploader_pattern = "id=\"perfil\">(.+?)</span>"
+uploader_pattern = "<span style=\"color: .+?\" >(.+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
 
@@ -187,9 +187,11 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
             for idmatch in re.finditer(id_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 id = idmatch.group(1)
                 log("ID match: '%s' ..." % idmatch.group(1))         
+            uploader = ""
             for upmatch in re.finditer(uploader_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
+                global uploader
                 uploader = upmatch.group(1)
-                log("Uploader: '%s' ..." % uploader) 
+            if uploader == "": uploader = "Bot-Pipocas"
             for hitsmatch in re.finditer(hits_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
                 hits = hitsmatch.group(1)
             downloads = int(hits) / 100
@@ -303,6 +305,8 @@ def Search(item):
     filename = xbmc.getCleanMovieTitle(filename)[0]
     searchstring_notclean = os.path.splitext(os.path.basename(file_original_path))[0]
     searchstring = ""
+    log(u"_searchstring_notclean = %s" % searchstring_notclean)
+    log(u"_searchstring = %s" % searchstring)
     global israr
     israr = os.path.abspath(file_original_path)
     israr = os.path.split(israr)
@@ -397,35 +401,35 @@ def Search(item):
         xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
 
 def extract_all_libarchive(archive_file, directory_to):
-	overall_success = True
-	files_out = list()
-	if 'archive://' in archive_file:
-		archive_path = archive_file
-	else:
-		archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
-	dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
-	for ff in files_in_archive:
-		file_from = os.path.join(archive_path,ff).replace('\\','/') #Windows unexpectedly requires a forward slash in the path
-		success = xbmcvfs.copy(file_from,os.path.join(xbmc.translatePath(directory_to),ff)) #Attempt to move the file first
-		if not success:
-			xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {'ff': ff,'archive_file':archive_file}, level=xbmc.LOGDEBUG)
-			overall_success = False
-		else:
-			xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {'ff': ff,'archive_file':archive_file}, level=xbmc.LOGDEBUG)
-			files_out.append(os.path.join(xbmc.translatePath(directory_to),ff))
-	for dd in dirs_in_archive:
-		if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to),dd)):
-			xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to),dd,''),'archive_file':archive_file}, level=xbmc.LOGDEBUG)
-			files_out2, success2 = extract_all_libarchive(os.path.join(archive_path,dd,'').replace('\\','/'),os.path.join(directory_to,dd))
-			if success2:
-				files_out = files_out + files_out2
-			else:
-				overall_success = False
-		else:
-			overall_success = False
-			xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {'dir_from': os.path.join(xbmc.translatePath(directory_to),dd)}, level=xbmc.LOGDEBUG)
+    overall_success = True
+    files_out = list()
+    if 'archive://' in archive_file:
+        archive_path = archive_file
+    else:
+        archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+    dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
+    for ff in files_in_archive:
+        file_from = os.path.join(archive_path,ff).replace('\\','/') #Windows unexpectedly requires a forward slash in the path
+        success = xbmcvfs.copy(file_from,os.path.join(xbmc.translatePath(directory_to),ff)) #Attempt to move the file first
+        if not success:
+            xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {'ff': ff,'archive_file':archive_file}, level=xbmc.LOGDEBUG)
+            overall_success = False
+        else:
+            xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {'ff': ff,'archive_file':archive_file}, level=xbmc.LOGDEBUG)
+            files_out.append(os.path.join(xbmc.translatePath(directory_to),ff))
+    for dd in dirs_in_archive:
+        if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to),dd)):
+            xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to),dd,''),'archive_file':archive_file}, level=xbmc.LOGDEBUG)
+            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path,dd,'').replace('\\','/'),os.path.join(directory_to,dd))
+            if success2:
+                files_out = files_out + files_out2
+            else:
+                overall_success = False
+        else:
+            overall_success = False
+            xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {'dir_from': os.path.join(xbmc.translatePath(directory_to),dd)}, level=xbmc.LOGDEBUG)
 
-	return files_out, overall_success
+    return files_out, overall_success
 
 def Download(id, filename):
     """Called when subtitle download request from XBMC."""
