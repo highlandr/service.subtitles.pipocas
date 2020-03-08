@@ -408,10 +408,11 @@ def extract_all_libarchive(archive_file, directory_to, extension = "zip"):
     files_out = list()
     if 'archive://' in archive_file or 'rar://' in archive_file:
         archive_path = archive_file
-    if extension == "zip":
-        archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
     else:
-        archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+        if extension == "zip":
+            archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+        else:
+            archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
         
     dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
     for ff in files_in_archive:
