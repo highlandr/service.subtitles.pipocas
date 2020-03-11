@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Service Pipocas.tv version 0.1.5
+# Service Pipocas.tv version 0.1.7
 # Code based on Undertext (FRODO) service
 # Coded by HiGhLaNdR@OLDSCHOOL
 # Ported to Gotham by HiGhLaNdR@OLDSCHOOL
@@ -145,8 +145,10 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     'Connection': 'keep-alive'}
     sessionPipocasTv = requests.Session()
     result = sessionPipocasTv.get(url)
-    if not result.ok:
-        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+
+    ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
+    if result.status_code == '403':
+        xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
     token = re.search(token_pattern, result.text)
@@ -163,8 +165,10 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
         data = payload, 
         headers = req_headers
     )
-    if not loginResult.ok:
-        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+
+    ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
+    if result.status_code == '403':
+        xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
     page = 1
@@ -189,7 +193,6 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
                 log("ID match: '%s' ..." % idmatch.group(1))         
             uploader = ""
             for upmatch in re.finditer(uploader_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
-                global uploader
                 uploader = upmatch.group(1)
             if uploader == "": uploader = "Bot-Pipocas"
             for hitsmatch in re.finditer(hits_pattern, content_details.text, re.IGNORECASE | re.DOTALL):
@@ -281,9 +284,9 @@ def Search(item):
     password = _addon.getSetting( 'PPpass' )
     if username == '' or password == '':
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
-        if username == '' and password != '': xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32016).encode('utf-8'),5000)))
-        if username != '' and password == '': xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32017).encode('utf-8'),5000)))
-        if username == '' and password == '': xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32018).encode('utf-8'),5000)))
+        if username == '' and password != '': xbmcgui.Dialog().notification(_scriptname, _language(32016).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+        if username != '' and password == '': xbmcgui.Dialog().notification(_scriptname, _language(32017).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+        if username == '' and password == '': xbmcgui.Dialog().notification(_scriptname, _language(32018).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
     #### PARENT FOLDER TWEAK DEFINED IN THE ADD-ON SETTINGS (AUTO | ALWAYS ON (DEACTIVATED) | OFF)
     file_original_path = item['file_original_path']
     _parentfolder = _addon.getSetting( 'PARENT' )
@@ -398,7 +401,8 @@ def Search(item):
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list: append_subtitle(sub)
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
-        xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
+#        xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
+        xbmcgui.Dialog().notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish.'), xbmcgui.NOTIFICATION_ERROR)
 
 def extract_all_libarchive(archive_file, directory_to):
     overall_success = True
@@ -476,7 +480,9 @@ def Download(id, filename):
     #### If user is not registered or User\Pass is misspelled it will generate an error message and break the script execution!
     if 'Cria uma conta' in content.content:
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
-        xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+        #xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
+        xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+        
     if content.content is not None:
         uid = uuid.uuid4()
         if sys.version_info.major == 3:
