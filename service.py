@@ -147,7 +147,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     result = sessionPipocasTv.get(url)
 
     ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
-    if result.status_code == '403':
+    if result.status_code != '200':
         xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
@@ -167,9 +167,12 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     )
 
     ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
-    if result.status_code == '403':
+    if loginResult.status_code != '200':
         xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
+
+    if 'Cria uma conta' in loginResult.text:
+        xbmcgui.Dialog().notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
 
     page = 1
     if languageshort == "pt": url = main_url + "legendas?t=rel&l=portugues&page=" + str(page) + "&s=" + urllib.quote_plus(searchstring)
