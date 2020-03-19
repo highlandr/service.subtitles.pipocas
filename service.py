@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 # Service Pipocas.tv version 0.1.7
 # Code based on Undertext (FRODO) service
 # Coded by HiGhLaNdR@OLDSCHOOL
@@ -11,26 +11,18 @@
 import os
 from os.path import join as pjoin
 import re
-import fnmatch
 import shutil
 import sys
 import string
 import time
-import unicodedata
 import urllib
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
 import xbmcvfs
-import cookielib
-import urllib2
 import uuid
 import requests
-try:
-    import simplejson as json
-except:
-    import json
 
 main_url = 'https://pipocas.tv/'
 debug_pretext = 'Pipocas'
@@ -82,64 +74,7 @@ hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-downloa
 uploader_pattern = "<span style=\"color: .+?\" >(.+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
-
-# ==========
-# Functions
-# ==========
-
-
-def _log(module, msg):
-    s = u"### [%s] - %s" % (module, msg)
-    xbmc.log(s.encode('utf-8'), level=xbmc.LOGDEBUG)
-
-
-def log(msg=None):
-    if debug == 'true': _log(_scriptname, msg)
-
-
-def geturl(url):
-    class MyOpener(urllib.FancyURLopener):
-        #version = HTTP_USER_AGENT
-        version = ''
-    my_urlopener = MyOpener()
-    log(u"Getting url: %s" % url)
-    try:
-        response = my_urlopener.open(url)
-        content = response.read()
-    except:
-        log(u"Failed to get url:%s" % url)
-        content = None
-    return content
-
-
-def enable_rar():
-
-    def is_rar_enabled():
-        q = '{"jsonrpc": "2.0", "method": "Addons.GetAddonDetails", "params": {"addonid": "vfs.libarchive", "properties": ["enabled"]}, "id": 0 }'
-        r = json.loads(xbmc.executeJSONRPC(q))
-        log(xbmc.executeJSONRPC(q))
-        if r.has_key("result") and r["result"].has_key("addon"):
-            return r['result']["addon"]["enabled"]
-        return True
-
-    if not is_rar_enabled():
-        xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": "vfs.libarchive", "enabled": true} }')
-        time.sleep(1)
-        if not is_rar_enabled():
-            ok = _dialog.ok(_language(32012).encode("utf-8"), _language(32013).encode("utf-8"), " ", _language(32014).encode("utf-8"))
-
-
-def xbmc_walk(DIR):
-    LIST = []
-    dirs, files = xbmcvfs.listdir(DIR)
-    for file in files:
-        ext = os.path.splitext(file)[1][1:].lower()
-        if ext in SUB_EXTS:
-            LIST.append(os.path.join(DIR,  file))
-    for dir in dirs:
-        LIST.extend(list(xbmc_walk(os.path.join(DIR, dir))))
-    return LIST
-
+from pipocas import *
 
 def getallsubs(searchstring, languageshort, languagelong, file_original_path, searchstring_notclean):
     subtitles_list = []
@@ -302,8 +237,7 @@ def append_subtitle(item):
     args['scriptid'] = _scriptid
     url = INTERNAL_LINK_URL % args
     # add it to list, this can be done as many times as needed for all subtitles found
-    xbmcplugin.addDirectoryItem(handle=int(
-        sys.argv[1]), url=url, listitem=listitem, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=False)
 
 
 def Search(item):
@@ -451,41 +385,6 @@ def Search(item):
         _dialog.notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish'), xbmcgui.NOTIFICATION_ERROR)
 
 
-def extract_all_libarchive(archive_file, directory_to):
-    overall_success = True
-    files_out = list()
-    if 'archive://' in archive_file:
-        archive_path = archive_file
-    else:
-        archive_path = 'archive://%(archive_file)s' % {
-            'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
-    dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
-    for ff in files_in_archive:
-        # Windows unexpectedly requires a forward slash in the path
-        file_from = os.path.join(archive_path, ff).replace('\\', '/')
-        success = xbmcvfs.copy(file_from, os.path.join(
-            xbmc.translatePath(directory_to), ff))  # Attempt to move the file first
-        if not success:
-            xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            overall_success = False
-        else:
-            xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out.append(os.path.join(
-                xbmc.translatePath(directory_to), ff))
-    for dd in dirs_in_archive:
-        if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to), dd)):
-            xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to), dd, ''), 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd))
-            if success2:
-                files_out = files_out + files_out2
-            else:
-                overall_success = False
-        else:
-            overall_success = False
-            xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {'dir_from': os.path.join(xbmc.translatePath(directory_to), dd)}, level=xbmc.LOGDEBUG)
-
-    return files_out, overall_success
-
 
 def Download(id, filename):
     """Called when subtitle download request from XBMC."""
@@ -616,27 +515,7 @@ def Download(id, filename):
     return subtitles_list
 
 
-def normalizeString(str):
-    return unicodedata.normalize('NFKD', unicode(str, 'utf-8')).encode('ascii', 'ignore')
 
-
-def get_params():
-    param = []
-    paramstring = sys.argv[2]
-    if len(paramstring) >= 2:
-        params = paramstring
-        cleanedparams = params.replace('?', '')
-        if params.endswith('/'):
-            params = params[:-2]  # XXX: Should be [:-1] ?
-        pairsofparams = cleanedparams.split('&')
-        param = {}
-        for pair in pairsofparams:
-            splitparams = {}
-            splitparams = pair.split('=')
-            if len(splitparams) == 2:
-                param[splitparams[0]] = splitparams[1]
-
-    return param
 
 
 # Get parameters from XBMC and launch actions
