@@ -466,28 +466,23 @@ def extract_all_libarchive(archive_file, directory_to):
         success = xbmcvfs.copy(file_from, os.path.join(
             xbmc.translatePath(directory_to), ff))  # Attempt to move the file first
         if not success:
-            xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {
-                     'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
+            xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
             overall_success = False
         else:
-            xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {
-                     'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
+            xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
             files_out.append(os.path.join(
                 xbmc.translatePath(directory_to), ff))
     for dd in dirs_in_archive:
         if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to), dd)):
-            xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(
-                xbmc.translatePath(directory_to), dd, ''), 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out2, success2 = extract_all_libarchive(os.path.join(
-                archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd))
+            xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to), dd, ''), 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
+            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd))
             if success2:
                 files_out = files_out + files_out2
             else:
                 overall_success = False
         else:
             overall_success = False
-            xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {
-                     'dir_from': os.path.join(xbmc.translatePath(directory_to), dd)}, level=xbmc.LOGDEBUG)
+            xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {'dir_from': os.path.join(xbmc.translatePath(directory_to), dd)}, level=xbmc.LOGDEBUG)
 
     return files_out, overall_success
 
