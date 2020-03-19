@@ -70,7 +70,7 @@ name_pattern = "<h3 class=\"title\" style=\"word-break: break-all;\">Release: <s
 id_pattern = "legendas/download/(.+?)\""
 hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-download\" aria-hidden=\"true\"></i> (.+?)</div></span>"
 #desc_pattern = "<div class=\"description-box\">([\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*[\n\r\t].*)<center><iframe"
-uploader_pattern = "<span style=\"color: .+?\" >(.+?)</span></a></b>"
+uploader_pattern = "<span style=\"color:\s#[A-Za-z0-9]+?\"\s*>([A-Za-z0-9]+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
 from pipocas import *
