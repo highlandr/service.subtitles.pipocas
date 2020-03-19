@@ -431,31 +431,43 @@ def Download(id, filename):
     if not content.ok:
         return []
     # If user is not registered or User\Pass is misspelled it will generate an error message and break the script execution!
-    if 'Cria uma conta' in content.content:
+    thecontent = content.content
+    if 'Cria uma conta' in thecontent:
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
         #xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
 
-    if content.content is not None:
-        uid = uuid.uuid4()
-        if sys.version_info.major == 3:
-            local_tmp_file = os.path.join(_temp, str(uid) + ".xxx")
+    if thecontent is not None:
+        random = uuid.uuid4().hex
+
+        # Check archive type (rar/zip/else) through the file header (rar=Rar!, zip=PK)
+        log(u"Checking archive type")
+        if thecontent[:4] == 'Rar!':
+            typeid = "rar"
+            packed = True
+            log(u"Discovered RAR Archive")
+        elif thecontent[:2] == 'PK':
+            typeid = "zip"
+            packed = True
+            log(u"Discovered ZIP Archive")
         else:
-            local_tmp_file = os.path.join(_temp, unicode(uid) + ".xxx")
-        packed = False
+            typeid = "srt"
+            packed = False
+            log(u"Discovered a non-archive file")
+
+        local_tmp_file = os.path.join(_temp, random + "." + typeid)
 
         try:
             log(u"Saving subtitles to '%s'" % local_tmp_file)
+
             if sys.version_info.major == 3:
                 local_file_handle = xbmcvfs.File(local_tmp_file, "w")
-                local_file_handle.write(bytearray(content.content))
+                local_file_handle.write(bytearray(thecontent))
             else:
                 local_file_handle = xbmcvfs.File(local_tmp_file, "wb")
-                local_file_handle.write(content.content)
+                local_file_handle.write(thecontent)
             local_file_handle.close()
 
-            log(u"Checking archive type")
-            # Check archive type (rar/zip/else) through the file header (rar=Rar!, zip=PK)
             myfile = xbmcvfs.File(local_tmp_file, "rb")
             myfile.seek(0, 0)
             if myfile.read(1) == 'R':
@@ -473,23 +485,14 @@ def Download(id, filename):
                     packed = False
                     log(u"Discovered a non-archive file")
             myfile.close()
-            if sys.version_info.major == 3:
-                local_tmp_file = os.path.join(_temp, str(uid) + "." + typeid)
-                xbmcvfs.rename(os.path.join(
-                    _temp, str(uid) + ".xxx"), local_tmp_file)
-            else:
-                local_tmp_file = os.path.join(
-                    _temp, unicode(uid) + "." + typeid)
-                xbmcvfs.rename(os.path.join(
-                    _temp, unicode(uid) + ".xxx"), local_tmp_file)
+
             log(u"Saving to %s" % local_tmp_file)
         except:
             log(u"Failed to save subtitle to %s" % local_tmp_file)
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_all_libarchive(
-                local_tmp_file, _temp)
+            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp)
 
             temp = []
             for file in extractedFileList:
@@ -512,9 +515,6 @@ def Download(id, filename):
             subtitles_list.append(local_tmp_file)
 
     return subtitles_list
-
-
-
 
 
 # Get parameters from XBMC and launch actions
@@ -564,6 +564,7 @@ if params['action'] == 'search' or params['action'] == 'manualsearch':
 elif params['action'] == 'download':
     # we pickup all our arguments sent from def Search()
     subs = Download(params["id"], params["filename"])
+
     # we can return more than one subtitle for multi CD versions, for now we
     # are still working out how to handle that in XBMC core
     for sub in subs:
