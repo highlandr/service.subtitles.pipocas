@@ -147,3 +147,19 @@ def get_params():
                 param[splitparams[0]] = splitparams[1]
 
     return param
+
+
+def cleanDirectory(directory):
+    try:
+        if xbmcvfs.exists(directory + "/"):
+            for root, dirs, files in os.walk(directory):
+                for f in files:
+                    file = os.path.join(root, f)
+                    xbmcvfs.delete(file)
+                for d in dirs:
+                    dir = os.path.join(root, d)
+                    xbmcvfs.rmdir(dir)
+    except:
+        pass
+    if not xbmcvfs.exists(directory):
+        xbmcvfs.mkdirs(directory)
