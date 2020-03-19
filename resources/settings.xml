@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
   <category label="32003">
-    <setting id="PPuser" type="text" label="32001" default="" />
-    <setting id="PPpass" type="text" option = "hidden" label="32002" default="" />
+    <setting id="USERNAME" type="text" label="32001" default="" />
+    <setting id="PASSWORD" type="text" option = "hidden" label="32002" default="" />
   </category>
   <category label="32014">
     <setting id="PT" type="bool" label="32004" default="true" />

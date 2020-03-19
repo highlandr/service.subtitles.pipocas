@@ -64,8 +64,8 @@ SUB_EXTS = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
 HTTP_USER_AGENT = "User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)"
 
 # Grabbing login and pass from xbmc settings
-username = _addon.getSetting("PPuser")
-password = _addon.getSetting("PPpass")
+username = _addon.getSetting("USERNAME")
+password = _addon.getSetting("PASSWORD")
 
 # ====================================================================================================================
 # Regular expression patterns
@@ -330,8 +330,8 @@ def Search(item):
     # use item["some_property"] that was set earlier
     # once done, set xbmcgui.ListItem() below and pass it to xbmcplugin.addDirectoryItem()
     # CHECKING FOR ANYTHING IN THE USERNAME AND PASSWORD, IF NULL IT STOPS THE SCRIPT WITH A WARNING
-    username = _addon.getSetting('PPuser')
-    password = _addon.getSetting('PPpass')
+    username = _addon.getSetting('USERNAME')
+    password = _addon.getSetting('PASSWORD')
     if username == '' or password == '':
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
         if username == '' and password != '':
