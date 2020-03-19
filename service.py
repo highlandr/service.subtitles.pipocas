@@ -371,8 +371,7 @@ def Search(item):
         log(u"Manual Searchstring string = %s" % searchstring)
     else:
         if tvshow != '':
-            searchstring = "%s S%#02dE%#02d" % (
-                tvshow, int(season), int(episode))
+            searchstring = "%s S%#02dE%#02d" % (tvshow, int(season), int(episode))
         elif title != '' and tvshow != '':
             searchstring = title
         else:
@@ -386,8 +385,7 @@ def Search(item):
                         searchstring_notclean = dirsearch[-3]
                         searchstring = xbmc.getCleanMovieTitle(dirsearch[-3])
                         searchstring = searchstring[0]
-                        log(u"RAR MULTI1 CD Searchstring string = %s" %
-                            searchstring)
+                        log(u"RAR MULTI1 CD Searchstring string = %s" % searchstring)
                     else:
                         searchstring = title
                 else:
@@ -414,8 +412,7 @@ def Search(item):
                 else:
                     if _search == '0':
                         if re.search("(.+?s[0-9][0-9]e[0-9][0-9])", filename, re.IGNORECASE):
-                            searchstring = re.search(
-                                "(.+?s[0-9][0-9]e[0-9][0-9])", filename, re.IGNORECASE)
+                            searchstring = re.search("(.+?s[0-9][0-9]e[0-9][0-9])", filename, re.IGNORECASE)
                             searchstring = searchstring.group(0)
                             log(u"FilenameTV Searchstring = %s" % searchstring)
                         else:
@@ -423,8 +420,7 @@ def Search(item):
                             log(u"Filename Searchstring = %s" % searchstring)
                     else:
                         if re.search("(.+?s[0-9][0-9]e[0-9][0-9])", title, re.IGNORECASE):
-                            searchstring = re.search(
-                                "(.+?s[0-9][0-9]e[0-9][0-9])", title, re.IGNORECASE)
+                            searchstring = re.search("(.+?s[0-9][0-9]e[0-9][0-9])", title, re.IGNORECASE)
                             searchstring = searchstring.group(0)
                             log(u"TitleTV Searchstring = %s" % searchstring)
                         else:
@@ -453,7 +449,7 @@ def Search(item):
         for sub in subtitles_list:
             append_subtitle(sub)
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
-        #        xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
+        # xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
         _dialog.notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish'), xbmcgui.NOTIFICATION_ERROR)
 
 
