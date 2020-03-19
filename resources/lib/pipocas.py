@@ -83,10 +83,17 @@ def xbmc_walk(DIR):
     return LIST
 
 
-def extract_all_libarchive(archive_file, directory_to):
+def extract_all_libarchive(archive_file, directory_to, extension):
     overall_success = True
     files_out = list()
-    if 'archive://' in archive_file:
+    if 'archive://' in archive_file or 'rar://' in archive_file:
+        archive_path = archive_file
+    if extension == "zip":
+        archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+    else:
+        archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+
+    if 'archive://' in archive_file or 'rar://' in archive_file:
         archive_path = archive_file
     else:
         archive_path = 'archive://%(archive_file)s' % {
@@ -107,7 +114,7 @@ def extract_all_libarchive(archive_file, directory_to):
     for dd in dirs_in_archive:
         if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to), dd)):
             xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to), dd, ''), 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd))
+            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd), extension)
             if success2:
                 files_out = files_out + files_out2
             else:

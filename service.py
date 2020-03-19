@@ -109,7 +109,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
         headers=req_headers
     )
 
-    if result.status_code != 200:
+    if loginResult.status_code != 200:
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
@@ -126,6 +126,10 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
         url = main_url + "home"
 
     content = sessionPipocasTv.get(url)
+
+    if 'Cria uma conta' in content.text:
+        _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+
     while re.search(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL) and page < 2:
         log("Getting '%s' inside while ..." % subtitle_pattern)
         for matches in re.finditer(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL):
@@ -492,7 +496,7 @@ def Download(id, filename):
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp)
+            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp, typeid)
 
             temp = []
             for file in extractedFileList:
