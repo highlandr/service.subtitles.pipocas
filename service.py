@@ -156,8 +156,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     sessionPipocasTv = requests.Session()
     result = sessionPipocasTv.get(url)
 
-    ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
-    if result.status_code == '403':
+    if result.status_code != 200:
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
@@ -176,8 +175,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
         headers=req_headers
     )
 
-    ######## PRECISO DEFINIR QUAL O CODIGO NOT OK PARA DISPARAR O ERRO DE LOGIN #################################
-    if result.status_code == '403':
+    if result.status_code != 200:
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
         return []
 
