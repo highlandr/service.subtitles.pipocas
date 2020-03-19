@@ -56,8 +56,7 @@ sys.path.append(_resource)
 
 #SEARCH_PAGE_URL  = main_url + 'modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s'
 INTERNAL_LINK_URL = 'plugin://%(scriptid)s/?action=download&id=%(id)s&filename=%(filename)s'
-SUB_EXTS          = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
-HTTP_USER_AGENT   = 'User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)'
+HTTP_USER_AGENT   = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13'
 
 # ====================================================================================================================
 # Regular expression patterns
@@ -83,7 +82,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
     url = main_url + 'login'
     # GET CSRF TOKEN
     req_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
+        'User-Agent': HTTP_USER_AGENT,
         'Referer': url,
         'Keep-Alive': '300',
         'Connection': 'keep-alive'

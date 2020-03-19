@@ -27,6 +27,8 @@ _dialog     = xbmcgui.Dialog()
 
 debug   = _addon.getSetting('DEBUG')
 
+SUB_EXTS          = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
+HTTP_USER_AGENT   = 'User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)'
 
 def _log(module, msg):
     s = u"### [%s] - %s" % (module, msg)
