@@ -390,16 +390,6 @@ def Search(item):
 
 
 def Download(id, filename):
-    """Called when subtitle download request from XBMC."""
-    # Cleanup temp dir, we recomend you download/unzip your subs in temp folder and
-    # pass that to XBMC to copy and activate
-    if os.path.isdir(_temp):
-        shutil.rmtree(_temp)
-    xbmcvfs.mkdirs(_temp)
-    if not os.path.isdir(_temp):
-        xbmcvfs.mkdir(_temp)
-
-    subtitles_list = []
 
     url = main_url + 'login'
     download = main_url + 'legendas/download/' + id
@@ -442,7 +432,9 @@ def Download(id, filename):
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
 
     if thecontent is not None:
+        subtitles_list = []
         random = uuid.uuid4().hex
+        cleanDirectory(_temp)
 
         # Check archive type (rar/zip/else) through the file header (rar=Rar!, zip=PK)
         log(u"Checking archive type")
