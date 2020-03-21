@@ -3,7 +3,7 @@
 # Code based on Undertext (FRODO) service
 # Coded by HiGhLaNdR@OLDSCHOOL
 # Ported to Gotham by HiGhLaNdR@OLDSCHOOL
-# Help by VaRaTRoN, Mafarricos and Leinad4Mind
+# Helped by VaRaTRoN, Mafarricos and Leinad4Mind
 # Bugs & Features to highlander@teknorage.com
 # https://www.teknorage.com
 # License: GPL v2
@@ -393,7 +393,6 @@ def Search(item):
 
 
 def Download(id, filename):
-
     url = main_url + 'login'
     download = main_url + 'legendas/download/' + id
     # GET CSRF TOKEN
@@ -444,10 +443,12 @@ def Download(id, filename):
         if thecontent[:4] == 'Rar!':
             typeid = "rar"
             packed = True
+            enable_rar()
             log(u"Discovered RAR Archive")
         elif thecontent[:2] == 'PK':
             typeid = "zip"
             packed = True
+            enable_libarchive()
             log(u"Discovered ZIP Archive")
         else:
             typeid = "srt"
@@ -492,6 +493,11 @@ def Download(id, filename):
         if packed:
             time.sleep(2)
             extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp, typeid)
+
+            if(typeid == 'rar'):
+                disable_rar()
+            elif(typeid == 'zip'):
+                disable_libarchive()
 
             temp = []
             for file in extractedFileList:
