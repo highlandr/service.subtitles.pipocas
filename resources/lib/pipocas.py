@@ -88,6 +88,8 @@ def extract_all_libarchive(archive_file, directory_to, extension):
     files_out = list()
     if 'archive://' in archive_file or 'rar://' in archive_file or 'zip://' in archive_file:
         archive_path = archive_file
+    elif extension == 'rar':
+        archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
     else:
         archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
 
