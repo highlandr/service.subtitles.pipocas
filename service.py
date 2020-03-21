@@ -8,6 +8,7 @@
 # https://www.teknorage.com
 # License: GPL v2
 
+
 import os
 from os.path import join as pjoin
 import re
@@ -23,6 +24,7 @@ import xbmcplugin
 import xbmcvfs
 import uuid
 import requests
+
 
 main_url = 'https://pipocas.tv/'
 debug_pretext = 'Pipocas'
