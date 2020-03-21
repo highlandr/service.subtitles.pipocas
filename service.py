@@ -129,6 +129,7 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
 
     if 'Cria uma conta' in content.text:
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+        return []
 
     while re.search(subtitle_pattern, content.text, re.IGNORECASE | re.DOTALL) and page < 2:
         log("Getting '%s' inside while ..." % subtitle_pattern)
@@ -395,7 +396,7 @@ def Download(id, filename):
     download = main_url + 'legendas/download/' + id
     # GET CSRF TOKEN
     req_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.A.B.C Safari/525.13',
+        'User-Agent': HTTP_USER_AGENT,
         'Referer': url,
         'Keep-Alive': '300',
         'Connection': 'keep-alive'
@@ -428,8 +429,8 @@ def Download(id, filename):
     thecontent = content.content
     if 'Cria uma conta' in thecontent:
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
-        #xbmc.executebuiltin(('Notification(%s,%s,%d)' % (_scriptname , _language(32019).encode('utf8'),5000)))
         _dialog.notification(_scriptname, _language(32019).encode('utf8'), xbmcgui.NOTIFICATION_ERROR)
+        return []
 
     if thecontent is not None:
         subtitles_list = []
