@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
-# Service Pipocas.tv version 0.1.7
+# Service Pipocas.tv
 # Code based on Undertext (FRODO) service
 # Coded by HiGhLaNdR@OLDSCHOOL
 # Ported to Gotham by HiGhLaNdR@OLDSCHOOL
-# Help by VaRaTRoN and Mafarricos
+# Help by VaRaTRoN, Mafarricos and Leinad4Mind
 # Bugs & Features to highlander@teknorage.com
-# http://www.teknorage.com
+# https://www.teknorage.com
 # License: GPL v2
 
 import os
