@@ -24,7 +24,17 @@ import xbmcplugin
 import xbmcvfs
 import uuid
 import requests
+from platform import system, architecture, machine, release, version
+from operator import itemgetter
 
+OS_SYSTEM = system()
+OS_ARCH_BIT = architecture()[0]
+OS_ARCH_LINK = architecture()[1]
+OS_MACHINE = machine()
+OS_RELEASE = release()
+OS_VERSION = version()
+OS_DETECT = OS_SYSTEM + '-' + OS_ARCH_BIT + '-' + OS_ARCH_LINK
+OS_DETECT += ' | host: [%s][%s][%s]' %(OS_MACHINE, OS_RELEASE, OS_VERSION)
 
 main_url = 'https://pipocas.tv/'
 debug_pretext = 'Pipocas'
@@ -42,6 +52,9 @@ _profile    = xbmc.translatePath(_addon.getAddonInfo('profile')).decode('utf-8')
 _resource   = xbmc.translatePath(pjoin(_cwd, 'resources', 'lib')).decode('utf-8')
 _temp       = xbmc.translatePath(pjoin(_profile, 'temp'))
 
+sys.path.append(_resource)
+from pipocas import *
+
 _search = _addon.getSetting('SEARCH')
 debug   = _addon.getSetting('DEBUG')
 # Grabbing login and pass from xbmc settings
@@ -54,7 +67,6 @@ xbmcvfs.mkdirs(_temp)
 if not os.path.isdir(_temp):
     xbmcvfs.mkdir(_temp)
 
-sys.path.append(_resource)
 
 #SEARCH_PAGE_URL  = main_url + 'modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s'
 INTERNAL_LINK_URL = 'plugin://%(scriptid)s/?action=download&id=%(id)s&filename=%(filename)s'
@@ -75,7 +87,8 @@ hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-downloa
 uploader_pattern = "<span style=\"color:\s#[A-Za-z0-9]+?\"\s*>([A-Za-z0-9]+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
-from pipocas import *
+
+
 
 def getallsubs(searchstring, languageshort, languagelong, file_original_path, searchstring_notclean):
     subtitles_list = []
@@ -216,13 +229,8 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
             url = main_url + "home"
         content = sessionPipocasTv.get(url)
 
-#   Bubble sort, to put syncs on top
-    for n in range(0, len(subtitles_list)):
-        for i in range(1, len(subtitles_list)):
-            temp = subtitles_list[i]
-            if subtitles_list[i]["sync"] > subtitles_list[i-1]["sync"]:
-                subtitles_list[i] = subtitles_list[i-1]
-                subtitles_list[i-1] = temp
+    # Bubble sort, to put syncs on top
+    subtitles_list = bubbleSort(subtitles_list)
     return subtitles_list
 
 
@@ -247,7 +255,7 @@ def append_subtitle(item):
 
 
 def Search(item):
-    enable_libarchive()
+    log("Host data '%s'" % OS_DETECT)
     """Called when searching for subtitles from XBMC."""
     # Do what's needed to get the list of subtitles from service site
     # use item["some_property"] that was set earlier
@@ -386,7 +394,6 @@ def Search(item):
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list:
             append_subtitle(sub)
-    disable_libarchive()
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
         # xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
         _dialog.notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish'), xbmcgui.NOTIFICATION_ERROR)
@@ -394,7 +401,6 @@ def Search(item):
 
 
 def Download(id, filename):
-    disable_libarchive()
     url = main_url + 'login'
     download = main_url + 'legendas/download/' + id
     # GET CSRF TOKEN
@@ -446,13 +452,11 @@ def Download(id, filename):
             extension = ".rar"
             archive_type = 'rar://'
             packed = True
-            enable_libarchive()
             log(u"Discovered RAR Archive")
         elif thecontent[:2] == 'PK':
             extension = ".zip"
             archive_type = 'zip://'
             packed = True
-            enable_libarchive()
             log(u"Discovered ZIP Archive")
         else:
             extension = ".srt"
@@ -475,9 +479,7 @@ def Download(id, filename):
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type)
-
-            disable_libarchive()
+            extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type, extension)
 
             temp = []
             for file in extractedFileList:
@@ -485,7 +487,7 @@ def Download(id, filename):
                 sub, ext = os.path.splitext(os.path.basename(file))
                 temp.append([file, sub, ext])
 
-            subtitles = sorted(temp, reverse=False)
+            subtitles = sorted(temp, key=itemgetter(1), reverse=False)
             subtitles_list = []
 
             if len(subtitles) > 1:
