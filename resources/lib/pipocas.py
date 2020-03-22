@@ -54,9 +54,9 @@ def geturl(url):
     return content
 
 
-def enable_rar():
+def enable_libarchive():
 
-    def is_rar_enabled():
+    def is_libarchive_enabled():
         q = '{"jsonrpc": "2.0", "method": "Addons.GetAddonDetails", "params": {"addonid": "vfs.libarchive", "properties": ["enabled"]}, "id": 0 }'
         r = json.loads(xbmc.executeJSONRPC(q))
         log(xbmc.executeJSONRPC(q))
@@ -64,11 +64,15 @@ def enable_rar():
             return r['result']["addon"]["enabled"]
         return True
 
-    if not is_rar_enabled():
+    if not is_libarchive_enabled():
         xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": "vfs.libarchive", "enabled": true} }')
         time.sleep(1)
-        if not is_rar_enabled():
-            ok = _dialog.ok(_language(32012).encode("utf-8"), _language(32013).encode("utf-8"), " ", _language(32014).encode("utf-8"))
+        if not is_libarchive_enabled():
+            ok = _dialog.ok(_language(32024).encode("utf-8"), _language(32025).encode("utf-8"), " ", _language(32026).encode("utf-8"))
+
+
+def disable_libarchive():
+    xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled","params":{"addonid": "vfs.libarchive", "enabled": false} }')
 
 
 def xbmc_walk(DIR):
@@ -83,40 +87,103 @@ def xbmc_walk(DIR):
     return LIST
 
 
-def extract_all_libarchive(archive_file, directory_to, extension):
+def extract_it_all(archive_file, directory_to, archive_type):
     overall_success = True
     files_out = list()
-    if 'archive://' in archive_file or 'rar://' in archive_file or 'zip://' in archive_file:
-        archive_path = archive_file
-    elif extension == 'rar':
-        archive_path = 'rar://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+    if archive_type != '':
+        archive_path = (archive_type + '%s') % urllib.quote_plus(xbmc.translatePath(archive_file))
+        archive_path_temp = ('archive://%s') % urllib.quote_plus(xbmc.translatePath(archive_file))
     else:
-        archive_path = 'archive://%(archive_file)s' % {'archive_file': urllib.quote_plus(xbmc.translatePath(archive_file))}
+      archive_path = archive_file
 
-    dirs_in_archive, files_in_archive = xbmcvfs.listdir(archive_path)
+    log('-----------------------------------------------------------')
+    log('---- Extracting archive URL: %s' % archive_path)
+    log('---- To directory: %s' % directory_to)
+
+    log('---- Calling xbmcvfs.listdir...')
+    try:
+        (dirs_in_archive, files_in_archive) = xbmcvfs.listdir(archive_path)
+    except:
+        (dirs_in_archive, files_in_archive) = xbmcvfs.listdir(archive_path_temp)
+    log('---- xbmcvfs.listdir CALLED...')
+
     for ff in files_in_archive:
-        # Windows unexpectedly requires a forward slash in the path
-        file_from = os.path.join(archive_path, ff).replace('\\', '/')
-        success = xbmcvfs.copy(file_from, os.path.join(
-            xbmc.translatePath(directory_to), ff))  # Attempt to move the file first
-        if not success:
-            xbmc.log(msg='Error extracting file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
+        log('---- File found in archive: %s' % ff)
+        url_from = os.path.join(archive_path, ff).replace('\\','/')  #Windows unexpectedly requires a forward slash in the path
+        log('---- URL from: %s' % url_from)
+        file_to = os.path.join(xbmc.translatePath(directory_to),ff)
+        log('---- File to: %s' % file_to)
+        copy_success = xbmcvfs.copy(url_from, file_to) #Attempt to move the file first
+        log('---- Calling xbmcvfs.copy...')
+
+        if not copy_success:
+            log('---- Copy ERROR!!!!!')
             overall_success = False
         else:
-            xbmc.log(msg='Extracted file %(ff)s from archive %(archive_file)s' % {'ff': ff, 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out.append(os.path.join(
-                xbmc.translatePath(directory_to), ff))
-    for dd in dirs_in_archive:
-        if xbmcvfs.mkdir(os.path.join(xbmc.translatePath(directory_to), dd)):
-            xbmc.log(msg='Created folder %(dd)s for archive %(archive_file)s' % {'dd': os.path.join(xbmc.translatePath(directory_to), dd, ''), 'archive_file': archive_file}, level=xbmc.LOGDEBUG)
-            files_out2, success2 = extract_all_libarchive(os.path.join(archive_path, dd, '').replace('\\', '/'), os.path.join(directory_to, dd), extension)
-            if success2:
-                files_out = files_out + files_out2
+            log( (ff[-3:] != 'rar' and ff[-3:] != 'zip') )
+            if (ff[-3:] != 'rar' and ff[-3:] != 'zip'):
+                log('---- Copy OK')
+                files_out.append(file_to)
+
+            if ff[-3:] == 'rar':
+                sub_archive_path = xbmc.translatePath(file_to)#.replace(':','%3A').replace('\\','%5C')
+                log('---- Extracting sub-rar URL: %s' % sub_archive_path)
+                sub_directory = os.path.join(directory_to, ff)[:-4]
+                log('---- To sub-rar: %s' % sub_directory)
+
+                files_out2, copy_success2 = extract_it_all(sub_archive_path, sub_directory, 'rar://')
+
+                if copy_success2:
+                    log('---- Copy OK 2')
+                    files_out = files_out + files_out2
+                    log('---- files_out2: %s' % files_out2)
+                else:
+                    overall_success = False
+                    log('---- Sub-rar ERROR!!!!!')
+
+            elif ff[-3:] == 'zip':
+                sub_archive_path = 'archive://'+xbmc.translatePath(file_to)#.replace(':','%3A').replace('\\','%5C')
+                log('---- Extracting sub-zip URL: %s' % sub_archive_path)
+                sub_directory = os.path.join(directory_to, ff)[:-4]
+                log('---- To sub-zip: %s' % sub_directory)
+
+                files_out2, copy_success2 = extract_it_all(sub_archive_path, sub_directory, 'archive://')
+
+                if copy_success2:
+                    log('---- Copy OK 2')
+                    files_out = files_out + files_out2
+                    log(files_out)
+                else:
+                    overall_success = False
+                    log('---- Sub-zip ERROR!!!!!')
+
+        for dd in dirs_in_archive:
+            log('---- Directory found in archive: %s' % dd)
+
+            dir_to_create = os.path.join(directory_to, dd)
+            log('---- Directory to create: %s' % dir_to_create)
+
+            log('---- Calling xbmcvfs.mkdir...')
+            mkdir_success = xbmcvfs.mkdir(dir_to_create)
+
+            if mkdir_success:
+
+                log('---- Mkdir OK')
+
+                dir_inside_archive_url = archive_path + '/' + dd + '/'
+                log('---- Directory inside archive URL: %s' % dir_inside_archive_url)
+
+                log('---- Calling extractArchiveToFolder...')
+                files_out2, copy_success2 = extract_it_all(dir_inside_archive_url, dir_to_create, '')
+
+                if copy_success2:
+                    files_out = files_out + files_out2
+                else:
+                    overall_success = False
+
             else:
                 overall_success = False
-        else:
-            overall_success = False
-            xbmc.log(msg='Unable to create the folder %(dir_from)s for libarchive extraction' % {'dir_from': os.path.join(xbmc.translatePath(directory_to), dd)}, level=xbmc.LOGDEBUG)
+                log('---- Mkdir ERROR!!!!!')
 
     return files_out, overall_success
 
