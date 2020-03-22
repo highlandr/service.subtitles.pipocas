@@ -71,28 +71,8 @@ def enable_libarchive():
             ok = _dialog.ok(_language(32024).encode("utf-8"), _language(32025).encode("utf-8"), " ", _language(32026).encode("utf-8"))
 
 
-def enable_rar():
-
-    def is_rar_enabled():
-        q = '{"jsonrpc": "2.0", "method": "Addons.GetAddonDetails", "params": {"addonid": "vfs.rar", "properties": ["enabled"]}, "id": 0 }'
-        r = json.loads(xbmc.executeJSONRPC(q))
-        log(xbmc.executeJSONRPC(q))
-        if r.has_key("result") and r["result"].has_key("addon"):
-            return r['result']["addon"]["enabled"]
-        return True
-
-    if not is_rar_enabled():
-        xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": "vfs.rar", "enabled": true} }')
-        time.sleep(1)
-        if not is_rar_enabled():
-            ok = _dialog.ok(_language(32024).encode("utf-8"), _language(32025).encode("utf-8"), " ", _language(32026).encode("utf-8"))
-
-
 def disable_libarchive():
     xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled","params":{"addonid": "vfs.libarchive", "enabled": false} }')
-
-def disable_rar():
-    xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Addons.SetAddonEnabled","params":{"addonid": "vfs.rar", "enabled": false} }')
 
 
 def xbmc_walk(DIR):

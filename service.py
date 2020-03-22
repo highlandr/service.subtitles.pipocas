@@ -247,7 +247,7 @@ def append_subtitle(item):
 
 
 def Search(item):
-    enable_rar()
+    enable_libarchive()
     """Called when searching for subtitles from XBMC."""
     # Do what's needed to get the list of subtitles from service site
     # use item["some_property"] that was set earlier
@@ -386,6 +386,7 @@ def Search(item):
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list:
             append_subtitle(sub)
+    disable_libarchive()
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
         # xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
         _dialog.notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish'), xbmcgui.NOTIFICATION_ERROR)
@@ -393,6 +394,7 @@ def Search(item):
 
 
 def Download(id, filename):
+    disable_libarchive()
     url = main_url + 'login'
     download = main_url + 'legendas/download/' + id
     # GET CSRF TOKEN
@@ -444,7 +446,7 @@ def Download(id, filename):
             extension = ".rar"
             archive_type = 'rar://'
             packed = True
-            enable_rar()
+            enable_libarchive()
             log(u"Discovered RAR Archive")
         elif thecontent[:2] == 'PK':
             extension = ".zip"
@@ -475,10 +477,7 @@ def Download(id, filename):
             time.sleep(2)
             extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type)
 
-            if(extension == '.rar'):
-                disable_rar()
-            elif(extension == '.zip'):
-                disable_libarchive()
+            disable_libarchive()
 
             temp = []
             for file in extractedFileList:

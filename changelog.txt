@@ -4,6 +4,8 @@
 - Enhance translations
 - Fix little bugs present regarding new website
 - Still compatible with all Kodi above 13
+- Refactor extract function
+- Supports rar's recursively
 0.1.7
 - Fix unrar solid files
 0.1.6
