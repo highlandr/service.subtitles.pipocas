@@ -16,106 +16,106 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 2.3\n"
 
-msgctxt "32001"
+msgctxt "#32001"
 msgid "Usuário"
 msgstr ""
 
-msgctxt "32002"
+msgctxt "#32002"
 msgid "Senha"
 msgstr ""
 
-msgctxt "32003"
+msgctxt "#32003"
 msgid "Detalhes da conta"
 msgstr ""
 
-msgctxt "32004"
+msgctxt "#32004"
 msgid "Português Ativo"
 msgstr ""
 
-msgctxt "32005"
+msgctxt "#32005"
 msgid "Português Brasileiro Ativo"
 msgstr ""
 
-msgctxt "32006"
+msgctxt "#32006"
 msgid "Espanhol Ativo"
 msgstr ""
 
-msgctxt "32007"
+msgctxt "#32007"
 msgid "Inglês Ativo"
 msgstr ""
 
-msgctxt "32008"
+msgctxt "#32008"
 msgid "Forçar Descrição Completa (Texto com \"lixo\" incluído)"
 msgstr ""
 
-msgctxt "32009"
+msgctxt "#32009"
 msgid "Sem RELEASE na descrição!"
 msgstr ""
 
-msgctxt "32010"
+msgctxt "#32010"
 msgid "Pesquisa e sincroniza pelo diretório do filme"
 msgstr ""
 
-msgctxt "32011"
+msgctxt "#32011"
 msgid "Auto"
 msgstr ""
 
-msgctxt "32012"
+msgctxt "#32012"
 msgid "Sempre ligado"
 msgstr ""
 
-msgctxt "32013"
+msgctxt "#32013"
 msgid "Desligado"
 msgstr ""
 
-msgctxt "32014"
+msgctxt "#32014"
 msgid "Idiomas (Site)"
 msgstr ""
 
-msgctxt "32015"
+msgctxt "#32015"
 msgid "Avançadas"
 msgstr ""
 
-msgctxt "32016"
+msgctxt "#32016"
 msgid "O usuário é obrigatório! Verifique as configurações do serviço!"
 msgstr ""
 
-msgctxt "32017"
+msgctxt "#32017"
 msgid "A senha é obrigatória! Verifique as configurações do serviço!"
 msgstr ""
 
-msgctxt "32018"
+msgctxt "#32018"
 msgid "O usuário e senha são obrigatórios! Verifique as configurações do serviço!"
 msgstr ""
 
-msgctxt "32019"
+msgctxt "#32019"
 msgid "Apenas para usuários registrados! Usuário e/ou Senha errados? Verifique as configurações do serviço! Obrigado."
 msgstr ""
 
-msgctxt "32020"
+msgctxt "#32020"
 msgid "Prioridade de Pesquisa por"
 msgstr ""
 
-msgctxt "32021"
+msgctxt "#32021"
 msgid "Nome do Arquivo"
 msgstr ""
 
-msgctxt "32022"
+msgctxt "#32022"
 msgid "Título"
 msgstr ""
 
-msgctxt "32023"
+msgctxt "#32023"
 msgid "Ativar modo depuração"
 msgstr ""
 
-msgctxt "32024"
+msgctxt "#32024"
 msgid "Extração RAR"
 msgstr ""
 
-msgctxt "32025"
+msgctxt "#32025"
 msgid "O sistema de arquivos virtual RAR precisa estar ativado."
 msgstr ""
 
-msgctxt "32026"
+msgctxt "#32026"
 msgid "Você deve ativá-lo em Addons -> Meus add-ons -> Virtual filesystems -> Archive support."
 msgstr ""
