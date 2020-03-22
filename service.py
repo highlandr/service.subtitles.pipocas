@@ -25,6 +25,7 @@ import xbmcvfs
 import uuid
 import requests
 from platform import system, architecture, machine, release, version
+from operator import itemgetter
 
 OS_SYSTEM = system()
 OS_ARCH_BIT = architecture()[0]
@@ -51,6 +52,9 @@ _profile    = xbmc.translatePath(_addon.getAddonInfo('profile')).decode('utf-8')
 _resource   = xbmc.translatePath(pjoin(_cwd, 'resources', 'lib')).decode('utf-8')
 _temp       = xbmc.translatePath(pjoin(_profile, 'temp'))
 
+sys.path.append(_resource)
+from pipocas import *
+
 _search = _addon.getSetting('SEARCH')
 debug   = _addon.getSetting('DEBUG')
 # Grabbing login and pass from xbmc settings
@@ -63,7 +67,6 @@ xbmcvfs.mkdirs(_temp)
 if not os.path.isdir(_temp):
     xbmcvfs.mkdir(_temp)
 
-sys.path.append(_resource)
 
 #SEARCH_PAGE_URL  = main_url + 'modules.php?name=Downloads&file=jz&d_op=search_next&order=&form_cat=28&page=%(page)s&query=%(query)s'
 INTERNAL_LINK_URL = 'plugin://%(scriptid)s/?action=download&id=%(id)s&filename=%(filename)s'
@@ -84,7 +87,8 @@ hits_pattern = "<span class=\"hits hits-pd\"><div><i class=\"fa fa-cloud-downloa
 uploader_pattern = "<span style=\"color:\s#[A-Za-z0-9]+?\"\s*>([A-Za-z0-9]+?)</span></a></b>"
 release_pattern = "([^\W]\w{1,}\.{1,1}[^\.|^\ ][\w{1,}\.|\-|\(\d\d\d\d\)|\[\d\d\d\d\]]{3,}[\w{3,}\-|\.{1,1}]\w{2,})"
 release_pattern1 = "([^\W][\w\ ]{4,}[^\Ws][x264|xvid]{1,}-[\w]{1,})"
-from pipocas import *
+
+
 
 def getallsubs(searchstring, languageshort, languagelong, file_original_path, searchstring_notclean):
     subtitles_list = []
@@ -225,13 +229,8 @@ def getallsubs(searchstring, languageshort, languagelong, file_original_path, se
             url = main_url + "home"
         content = sessionPipocasTv.get(url)
 
-#   Bubble sort, to put syncs on top
-    for n in range(0, len(subtitles_list)):
-        for i in range(1, len(subtitles_list)):
-            temp = subtitles_list[i]
-            if subtitles_list[i]["sync"] > subtitles_list[i-1]["sync"]:
-                subtitles_list[i] = subtitles_list[i-1]
-                subtitles_list[i-1] = temp
+    # Bubble sort, to put syncs on top
+    subtitles_list = bubbleSort(subtitles_list)
     return subtitles_list
 
 
@@ -488,7 +487,7 @@ def Download(id, filename):
                 sub, ext = os.path.splitext(os.path.basename(file))
                 temp.append([file, sub, ext])
 
-            subtitles = sorted(temp, reverse=False)
+            subtitles = sorted(temp, key=itemgetter(1), reverse=False)
             subtitles_list = []
 
             if len(subtitles) > 1:
