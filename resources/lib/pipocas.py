@@ -89,7 +89,7 @@ def xbmc_walk(DIR):
 
 
 def extract_it_all(archive_file, directory_to, archive_type, extension=None):
-    libarchive_is_enable = disable_libarchive.is_libarchive_enabled()
+    libarchive_is_enable = enable_libarchive.is_libarchive_enabled()
     if libarchive_is_enable:
         if (is_android and extension == '.rar'):
             disable_libarchive()
