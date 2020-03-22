@@ -441,50 +441,31 @@ def Download(id, filename):
         # Check archive type (rar/zip/else) through the file header (rar=Rar!, zip=PK)
         log(u"Checking archive type")
         if thecontent[:4] == 'Rar!':
-            typeid = "rar"
+            extension = ".rar"
+            archive_type = 'rar://'
             packed = True
             enable_rar()
             log(u"Discovered RAR Archive")
         elif thecontent[:2] == 'PK':
-            typeid = "zip"
+            extension = ".zip"
+            archive_type = 'zip://'
             packed = True
             enable_libarchive()
             log(u"Discovered ZIP Archive")
         else:
-            typeid = "srt"
+            extension = ".srt"
+            archive_type = ''
             packed = False
             log(u"Discovered a non-archive file")
 
-        local_tmp_file = os.path.join(_temp, random + "." + typeid)
+        local_tmp_file = os.path.join(_temp, random + extension)
 
         try:
             log(u"Saving subtitles to '%s'" % local_tmp_file)
 
-            if sys.version_info.major == 3:
-                local_file_handle = xbmcvfs.File(local_tmp_file, "w")
-                local_file_handle.write(bytearray(thecontent))
-            else:
-                local_file_handle = xbmcvfs.File(local_tmp_file, "wb")
+            with open(local_tmp_file,'wb') as local_file_handle:
                 local_file_handle.write(thecontent)
             local_file_handle.close()
-
-            myfile = xbmcvfs.File(local_tmp_file, "rb")
-            myfile.seek(0, 0)
-            if myfile.read(1) == 'R':
-                typeid = "rar"
-                packed = True
-                log(u"Discovered RAR Archive")
-            else:
-                myfile.seek(0, 0)
-                if myfile.read(1) == 'P':
-                    typeid = "zip"
-                    packed = True
-                    log(u"Discovered ZIP Archive")
-                else:
-                    typeid = "srt"
-                    packed = False
-                    log(u"Discovered a non-archive file")
-            myfile.close()
 
             log(u"Saving to %s" % local_tmp_file)
         except:
@@ -492,11 +473,11 @@ def Download(id, filename):
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_all_libarchive(local_tmp_file, _temp, typeid)
+            extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type)
 
-            if(typeid == 'rar'):
+            if(extension == '.rar'):
                 disable_rar()
-            elif(typeid == 'zip'):
+            elif(extension == '.zip'):
                 disable_libarchive()
 
             temp = []
