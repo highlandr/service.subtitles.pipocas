@@ -99,7 +99,7 @@ def extract_it_all(archive_file, directory_to, archive_type):
     log('-----------------------------------------------------------')
     log('---- Extracting archive URL: %s' % archive_path)
     log('---- To directory: %s' % directory_to)
-    
+
     log('---- Calling xbmcvfs.listdir...')
     try:
         (dirs_in_archive, files_in_archive) = xbmcvfs.listdir(archive_path)
@@ -112,7 +112,7 @@ def extract_it_all(archive_file, directory_to, archive_type):
         url_from = os.path.join(archive_path, ff).replace('\\','/')  #Windows unexpectedly requires a forward slash in the path
         log('---- URL from: %s' % url_from)
         file_to = os.path.join(xbmc.translatePath(directory_to),ff)
-        log('---- File to: %s' % file_to) 
+        log('---- File to: %s' % file_to)
         copy_success = xbmcvfs.copy(url_from, file_to) #Attempt to move the file first
         log('---- Calling xbmcvfs.copy...')
 
@@ -159,23 +159,23 @@ def extract_it_all(archive_file, directory_to, archive_type):
 
         for dd in dirs_in_archive:
             log('---- Directory found in archive: %s' % dd)
-            
+
             dir_to_create = os.path.join(directory_to, dd)
             log('---- Directory to create: %s' % dir_to_create)
-            
+
             log('---- Calling xbmcvfs.mkdir...')
             mkdir_success = xbmcvfs.mkdir(dir_to_create)
 
             if mkdir_success:
 
                 log('---- Mkdir OK')
-                
+
                 dir_inside_archive_url = archive_path + '/' + dd + '/'
                 log('---- Directory inside archive URL: %s' % dir_inside_archive_url)
-                
+
                 log('---- Calling extractArchiveToFolder...')
                 files_out2, copy_success2 = extract_it_all(dir_inside_archive_url, dir_to_create, '')
-                
+
                 if copy_success2:
                     files_out = files_out + files_out2
                 else:
