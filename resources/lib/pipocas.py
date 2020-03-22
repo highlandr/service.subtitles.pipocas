@@ -26,6 +26,7 @@ _language   = _addon.getLocalizedString
 _dialog     = xbmcgui.Dialog()
 
 debug   = _addon.getSetting('DEBUG')
+is_android = (xbmc.getCondVisibility('system.platform.linux') and xbmc.getCondVisibility('system.platform.android'))
 
 SUB_EXTS          = ['srt', 'sub', 'txt', 'ass', 'ssa', 'smi']
 HTTP_USER_AGENT   = 'User-Agent=Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)'
@@ -87,7 +88,15 @@ def xbmc_walk(DIR):
     return LIST
 
 
-def extract_it_all(archive_file, directory_to, archive_type):
+def extract_it_all(archive_file, directory_to, archive_type, extension=None):
+    libarchive_is_enable = disable_libarchive.is_libarchive_enabled()
+    if libarchive_is_enable:
+        if (is_android and extension == '.rar'):
+            disable_libarchive()
+    if not libarchive_is_enable:
+        if not (is_android and extension == '.rar'):
+            enable_libarchive()
+
     overall_success = True
     files_out = list()
     if archive_type != '':
@@ -184,6 +193,11 @@ def extract_it_all(archive_file, directory_to, archive_type):
             else:
                 overall_success = False
                 log('---- Mkdir ERROR!!!!!')
+
+    if libarchive_is_enable:
+        enable_libarchive()
+    else:
+        disable_libarchive()
 
     return files_out, overall_success
 

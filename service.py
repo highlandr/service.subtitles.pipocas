@@ -24,7 +24,16 @@ import xbmcplugin
 import xbmcvfs
 import uuid
 import requests
+from platform import system, architecture, machine, release, version
 
+OS_SYSTEM = system()
+OS_ARCH_BIT = architecture()[0]
+OS_ARCH_LINK = architecture()[1]
+OS_MACHINE = machine()
+OS_RELEASE = release()
+OS_VERSION = version()
+OS_DETECT = OS_SYSTEM + '-' + OS_ARCH_BIT + '-' + OS_ARCH_LINK
+OS_DETECT += ' | host: [%s][%s][%s]' %(OS_MACHINE, OS_RELEASE, OS_VERSION)
 
 main_url = 'https://pipocas.tv/'
 debug_pretext = 'Pipocas'
@@ -247,7 +256,7 @@ def append_subtitle(item):
 
 
 def Search(item):
-    enable_libarchive()
+    log("Host data '%s'" % OS_DETECT)
     """Called when searching for subtitles from XBMC."""
     # Do what's needed to get the list of subtitles from service site
     # use item["some_property"] that was set earlier
@@ -386,7 +395,6 @@ def Search(item):
         subtitles_list = getallsubs(searchstring, "en", "English", file_original_path, searchstring_notclean)
         for sub in subtitles_list:
             append_subtitle(sub)
-    disable_libarchive()
     if PT_ON == 'false' and PTBR_ON == 'false' and ES_ON == 'false' and EN_ON == 'false':
         # xbmc.executebuiltin((u'Notification(%s,%s,%d)' % (_scriptname , normalizeString('Apenas Português | Português Brasil | English | Spanish.'),5000)))
         _dialog.notification(_scriptname, normalizeString('Apenas Português | Português Brasil | English | Spanish'), xbmcgui.NOTIFICATION_ERROR)
@@ -394,7 +402,6 @@ def Search(item):
 
 
 def Download(id, filename):
-    disable_libarchive()
     url = main_url + 'login'
     download = main_url + 'legendas/download/' + id
     # GET CSRF TOKEN
@@ -446,13 +453,11 @@ def Download(id, filename):
             extension = ".rar"
             archive_type = 'rar://'
             packed = True
-            enable_libarchive()
             log(u"Discovered RAR Archive")
         elif thecontent[:2] == 'PK':
             extension = ".zip"
             archive_type = 'zip://'
             packed = True
-            enable_libarchive()
             log(u"Discovered ZIP Archive")
         else:
             extension = ".srt"
@@ -475,9 +480,7 @@ def Download(id, filename):
 
         if packed:
             time.sleep(2)
-            extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type)
-
-            disable_libarchive()
+            extractedFileList, success = extract_it_all(local_tmp_file, _temp, archive_type, extension)
 
             temp = []
             for file in extractedFileList:
