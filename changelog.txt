@@ -1,4 +1,4 @@
-0.17.6 (Thanks Leinad4Mind)
+1.0.0 (Thanks Leinad4Mind)
 - Change versioning
 - Refactor and clean all the code
 - Enhance translations
@@ -6,6 +6,8 @@
 - Still compatible with all Kodi above 13
 - Refactor extract function
 - Supports rar's recursively
+- Change old translation files from xml to pot
+- 19.x Compatible
 0.1.7
 - Fix unrar solid files
 0.1.6
